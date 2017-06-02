@@ -28,6 +28,12 @@ import { CalendarResizeHelper } from '../../providers/calendarResizeHelper.provi
 import { CalendarEventTimesChangedEvent } from '../../interfaces/calendarEventTimesChangedEvent.interface';
 import { CalendarUtils } from '../../providers/calendarUtils.provider';
 
+export interface CurrentResize {
+  originalOffset: number;
+  originalSpan: number;
+  edge: string;
+}
+
 /**
  * Shows all events on a given week. Example usage:
  *
@@ -175,11 +181,7 @@ export class CalendarWeekViewComponent implements OnChanges, OnInit, OnDestroy {
   /**
    * @hidden
    */
-  currentResize: {
-    originalOffset: number,
-    originalSpan: number,
-    edge: string
-  };
+  currentResizes: Map<WeekViewEvent, CurrentResize> = new Map();
 
   /**
    * @hidden
@@ -238,11 +240,11 @@ export class CalendarWeekViewComponent implements OnChanges, OnInit, OnDestroy {
    * @hidden
    */
   resizeStarted(weekViewContainer: HTMLElement, weekEvent: WeekViewEvent, resizeEvent: ResizeEvent): void {
-    this.currentResize = {
+    this.currentResizes.set(weekEvent, {
       originalOffset: weekEvent.offset,
       originalSpan: weekEvent.span,
       edge: typeof resizeEvent.edges.left !== 'undefined' ? 'left' : 'right'
-    };
+    });
     const resizeHelper: CalendarResizeHelper = new CalendarResizeHelper(weekViewContainer, this.getDayColumnWidth(weekViewContainer));
     this.validateResize = ({rectangle}) => resizeHelper.validateResize({rectangle});
     this.cdr.markForCheck();
@@ -252,14 +254,18 @@ export class CalendarWeekViewComponent implements OnChanges, OnInit, OnDestroy {
    * @hidden
    */
   resizing(weekEvent: WeekViewEvent, resizeEvent: ResizeEvent, dayWidth: number): void {
+
+    const currentResize: CurrentResize = this.currentResizes.get(weekEvent);
+
     if (resizeEvent.edges.left) {
       const diff: number = Math.round(+resizeEvent.edges.left / dayWidth);
-      weekEvent.offset = this.currentResize.originalOffset + diff;
-      weekEvent.span = this.currentResize.originalSpan - diff;
+      weekEvent.offset = currentResize.originalOffset + diff;
+      weekEvent.span = currentResize.originalSpan - diff;
     } else if (resizeEvent.edges.right) {
       const diff: number = Math.round(+resizeEvent.edges.right / dayWidth);
-      weekEvent.span = this.currentResize.originalSpan + diff;
+      weekEvent.span = currentResize.originalSpan + diff;
     }
+
   }
 
   /**
@@ -267,26 +273,28 @@ export class CalendarWeekViewComponent implements OnChanges, OnInit, OnDestroy {
    */
   resizeEnded(weekEvent: WeekViewEvent): void {
 
+    const currentResize: CurrentResize = this.currentResizes.get(weekEvent);
+
     let daysDiff: number;
-    if (this.currentResize.edge === 'left') {
-      daysDiff = weekEvent.offset - this.currentResize.originalOffset;
+    if (currentResize.edge === 'left') {
+      daysDiff = weekEvent.offset - currentResize.originalOffset;
     } else {
-      daysDiff = weekEvent.span - this.currentResize.originalSpan;
+      daysDiff = weekEvent.span - currentResize.originalSpan;
     }
 
-    weekEvent.offset = this.currentResize.originalOffset;
-    weekEvent.span = this.currentResize.originalSpan;
+    weekEvent.offset = currentResize.originalOffset;
+    weekEvent.span = currentResize.originalSpan;
 
     let newStart: Date = weekEvent.event.start;
     let newEnd: Date = weekEvent.event.end;
-    if (this.currentResize.edge === 'left') {
+    if (currentResize.edge === 'left') {
       newStart = addDays(newStart, daysDiff);
     } else if (newEnd) {
       newEnd = addDays(newEnd, daysDiff);
     }
 
-    this.eventTimesChanged.emit({newStart, newEnd, event: weekEvent.event});
-    this.currentResize = null;
+    this.eventTimesChanged.emit({newStart, newEnd, event: weekEvent.event, droppedOutsideCalendar: false});
+    this.currentResizes.delete(weekEvent);
 
   }
 
@@ -297,27 +305,28 @@ export class CalendarWeekViewComponent implements OnChanges, OnInit, OnDestroy {
 
     let daysDragged: number = Math.round(draggedByPx / dayWidth);
     let newStart: Date = addDays(weekEvent.event.start, daysDragged);
+    let droppedOutsideCalendar: boolean = false;
 
     if (this.allowDragOutside) {
       // Restrict start to first and last day on current week
       if (newStart < this.days[0].date) {
         daysDragged += differenceInDays(startOfDay(this.days[0].date), startOfDay(newStart));
+        droppedOutsideCalendar = true;
       }
       const lastDate: Date = this.days[this.days.length - 1].date;
       if (newStart > lastDate) {
         daysDragged -= differenceInDays(startOfDay(newStart), startOfDay(lastDate));
+        droppedOutsideCalendar = true;
       }
     }
 
     newStart = addDays(weekEvent.event.start, daysDragged);
-
     let newEnd: Date;
     if (weekEvent.event.end) {
       newEnd = addDays(weekEvent.event.end, daysDragged);
     }
 
-    this.eventTimesChanged.emit({newStart, newEnd, event: weekEvent.event});
-
+    this.eventTimesChanged.emit({newStart, newEnd, event: weekEvent.event, droppedOutsideCalendar: droppedOutsideCalendar});
   }
 
   /**
@@ -344,7 +353,7 @@ export class CalendarWeekViewComponent implements OnChanges, OnInit, OnDestroy {
 
     if (!this.allowDragOutside) {
       const dragHelper: CalendarDragHelper = new CalendarDragHelper(weekViewContainer, event);
-      this.validateDrag = ({x, y}) => !this.currentResize && dragHelper.validateDrag({x, y});
+      this.validateDrag = ({x, y}) => this.currentResizes.size === 0 && dragHelper.validateDrag({x, y});
       this.cdr.markForCheck();
     }
   }
