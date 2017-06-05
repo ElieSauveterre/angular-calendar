@@ -1116,6 +1116,7 @@ var CalendarWeekViewComponent = (function () {
         if (this.allowDragOutside) {
             var eventRect = event.getBoundingClientRect();
             event.style.left = eventRect.left + 'px';
+            event.style.top = eventRect.top + 'px';
             event.style.width = eventRect.width + 'px';
             event.style.position = 'fixed';
             event.style.marginLeft = '';
@@ -1142,7 +1143,8 @@ var CalendarWeekViewComponent = (function () {
             viewDate: this.viewDate,
             weekStartsOn: this.weekStartsOn,
             excluded: this.excludeDays,
-            precision: this.precision
+            precision: this.precision,
+            absolutePositionedEvents: true
         });
     };
     CalendarWeekViewComponent.prototype.refreshAll = function () {
