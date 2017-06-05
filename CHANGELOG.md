@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.17.1"></a>
+## [0.17.1](https://github.com/ElieSauveterre/angular-calendar/compare/v0.17.0...v0.17.1) (2017-06-05)
+
+
+### Bug Fixes
+
+* **weekView:** allow events to be resized that are next to each other ([01b776c](https://github.com/ElieSauveterre/angular-calendar/commit/01b776c))
+* **weekView:** Set position from top when event is dragged ([6ca0fb6](https://github.com/ElieSauveterre/angular-calendar/commit/6ca0fb6))
+
+
+### Features
+
+* **weekView:** Add boolean flag to know it event dropped outside calendar ([2ebefa4](https://github.com/ElieSauveterre/angular-calendar/commit/2ebefa4))
+* **weekView:** Add css class on events row for easy custom style ([7cf8bdf](https://github.com/ElieSauveterre/angular-calendar/commit/7cf8bdf))
+* **weekView:** Add parameter to allow drag outside of calendar ([0c0d1fe](https://github.com/ElieSauveterre/angular-calendar/commit/0c0d1fe))
+* **weekView:** Add parameter to allow drag outside of calendar ([ccd07cb](https://github.com/ElieSauveterre/angular-calendar/commit/ccd07cb))
+* **weekView:** Allow drag outside calendar view ([c815b10](https://github.com/ElieSauveterre/angular-calendar/commit/c815b10))
+* **weekView:** Don't change date when drop outside calendar ([20188fa](https://github.com/ElieSauveterre/angular-calendar/commit/20188fa))
+* **weekView:** fix coment ([8695686](https://github.com/ElieSauveterre/angular-calendar/commit/8695686))
+* **weekView:** Fix events hidden when dragged outside calendar ([50432d8](https://github.com/ElieSauveterre/angular-calendar/commit/50432d8))
+* **weekView:** Remote parameter maxHeight ([d219218](https://github.com/ElieSauveterre/angular-calendar/commit/d219218))
+* **weekView:** Update demo drag external events ([e248f8f](https://github.com/ElieSauveterre/angular-calendar/commit/e248f8f))
+* **weekView:** Vertical scroll on events and fixed header ([47d697e](https://github.com/ElieSauveterre/angular-calendar/commit/47d697e))
+
+
+
 <a name="0.17.0"></a>
 # [0.17.0](https://github.com/mattlewis92/angular-calendar/compare/v0.16.0...v0.17.0) (2017-05-29)
 
